@@ -1,30 +1,85 @@
 <!doctype html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Lamp Room</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-50 p-6">
-    <div class="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
-        <h1 class="text-xl font-bold mb-4">Create a Room</h1> <input id="roomName" type="text" placeholder="Room name"
-            class="w-full border p-2 rounded mb-4" /> <input id="lampCount" type="number" placeholder="Number of lamps"
-            class="w-full border p-2 rounded mb-4" /> <button id="createBtn"
-            class="w-full bg-indigo-600 text-white rounded-lg p-2 hover:bg-indigo-700"> Create Room </button>
-        <div id="output" class="hidden mt-6">
-            <h2 class="text-lg font-semibold mb-2">Share these links</h2>
+<body class="bg-gradient-to-br from-purple-50 via-white to-purple-100 min-h-screen flex items-center justify-center">
+
+    <div class="w-full max-w-lg bg-white shadow-2xl rounded-2xl p-8">
+        <h1 class="text-4xl font-extrabold text-purple-800 text-center mb-6">🎇 Lamp Ceremony Room Creator</h1>
+
+        <div class="space-y-4">
+            <input id="roomName" type="text" placeholder="Room Name"
+                class="w-full border-2 border-purple-300 p-3 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none" />
+
+            <input id="lampCount" type="number" placeholder="Number of Lamps"
+                class="w-full border-2 border-purple-300 p-3 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none" />
+
+            <button id="createBtn"
+                class="w-full bg-purple-600 text-white font-semibold p-3 rounded-xl hover:bg-purple-700 transition-all shadow-lg">
+                Create Room ✨
+            </button>
+        </div>
+
+        <div id="output" class="hidden mt-6 p-4 bg-purple-50 border border-purple-200 rounded-xl space-y-3">
+            <h2 class="text-xl font-semibold text-purple-700">Share These Links</h2>
+
             <div>
-                <p class="font-medium">Participant (view-only):</p>
-                <div id="participantLink" class="bg-gray-100 p-2 rounded text-sm font-mono break-all mb-4"></div>
+                <p class="font-medium text-purple-600">Participant (view-only):</p>
+                <div id="participantLink"
+                    class="bg-white p-2 rounded text-sm font-mono break-all border border-purple-200 mt-1"></div>
             </div>
+
             <div>
-                <p class="font-medium">Chief Guest (control):</p>
-                <div id="chiefGuestLink" class="bg-gray-100 p-2 rounded text-sm font-mono break-all"></div>
+                <p class="font-medium text-purple-600">Chief Guest (control):</p>
+                <div id="chiefGuestLink"
+                    class="bg-white p-2 rounded text-sm font-mono break-all border border-purple-200 mt-1"></div>
             </div>
         </div>
     </div>
-    <script> document.getElementById("createBtn").addEventListener("click", async () => { const name = document.getElementById("roomName").value; const lampCount = parseInt(document.getElementById("lampCount").value, 10); const res = await fetch("/api/create-room", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, lampCount }), }); const data = await res.json(); if (!res.ok) return alert(JSON.stringify(data)); document.getElementById("output").classList.remove("hidden"); const base = window.location.origin; document.getElementById("participantLink").textContent = base + data.participantLink; document.getElementById("chiefGuestLink").textContent = base + data.chiefGuestLink; }); </script>
+
+    <script>
+        const createBtn = document.getElementById("createBtn");
+        const roomNameInput = document.getElementById("roomName");
+        const lampCountInput = document.getElementById("lampCount");
+        const outputDiv = document.getElementById("output");
+        const participantLinkDiv = document.getElementById("participantLink");
+        const chiefGuestLinkDiv = document.getElementById("chiefGuestLink");
+
+        createBtn.addEventListener("click", async () => {
+            const name = roomNameInput.value.trim();
+            const lampCount = parseInt(lampCountInput.value, 10);
+
+            // Validation
+            if (!name) return alert("Please enter a valid room name.");
+            if (!lampCount || lampCount < 1) return alert("Please enter a valid number of lamps (at least 1).");
+
+            // Send create request
+            try {
+                const res = await fetch("/api/create-room", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, lampCount }),
+                });
+                const data = await res.json();
+                if (!res.ok) return alert(JSON.stringify(data));
+
+                // Show links
+                outputDiv.classList.remove("hidden");
+                const base = window.location.origin;
+                participantLinkDiv.textContent = base + data.participantLink;
+                chiefGuestLinkDiv.textContent = base + data.chiefGuestLink;
+            } catch (err) {
+                alert("Error creating room: " + err.message);
+            }
+        });
+    </script>
+
 </body>
 
 </html>
