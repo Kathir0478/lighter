@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chief Guest - Light the Lamp</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body
+    class="bg-gradient-to-br from-yellow-50 via-white to-yellow-100 min-h-screen flex flex-col items-center justify-center">
+
+    <!-- Header -->
+    <div class="text-center mb-10">
+        <h1 class="text-3xl font-bold text-yellow-800">✨ Welcome, Chief Guest ✨</h1>
+        <p class="text-lg text-gray-600 mt-2">Click on one lamp to light it</p>
+    </div>
+
+    <!-- Lamp Circle -->
+    <div id="lampContainer" class="relative w-[400px] h-[400px] flex items-center justify-center"></div>
+
+    <!-- Status -->
+    <div id="status" class="mt-6 text-center text-gray-700 text-lg"></div>
+
+    <script>
+        const socket = io();
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get("roomId");
+
+        const lampContainer = document.getElementById("lampContainer");
+        const statusEl = document.getElementById("status");
+
+        let lamps = [];
+        let alreadyLit = false;
+
+        function renderLamps(lampCount, lampStates) {
+            lampContainer.innerHTML = "";
+            const radius = 150;
+            const centerX = 200;
+            const centerY = 200;
+
+            lamps = lampStates;
+
+            for (let i = 0; i < lampCount; i++) {
+                const angle = (i / lampCount) * 2 * Math.PI;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+
+                const lamp = document.createElement("div");
+                lamp.className = `absolute w-16 h-16 rounded-full shadow-md border-4 flex items-center justify-center cursor-pointer transition
+          ${lampStates[i] ? "bg-yellow-400 border-yellow-600 animate-pulse" : "bg-gray-200 border-gray-400 hover:bg-gray-300"}`;
+                lamp.style.left = `${x - 32}px`;
+                lamp.style.top = `${y - 32}px`;
+                lamp.innerHTML = lampStates[i] ? "🔥" : "🪔";
+
+                if (!lampStates[i] && !alreadyLit) {
+                    lamp.addEventListener("click", () => {
+                        socket.emit("light-lamp", { roomId, index: i });
+                        alreadyLit = true;
+                        statusEl.textContent = "You have lit your lamp. Thank you!";
+                    });
+                }
+
+                lampContainer.appendChild(lamp);
+            }
+        }
+
+        socket.emit("join-room", { roomId });
+
+        socket.on("room-data", ({ lamps, lampStates }) => {
+            renderLamps(lamps, lampStates);
+        });
+
+        socket.on("lamp-updated", ({ lampStates }) => {
+            renderLamps(lampStates.length, lampStates);
+        });
+    </script>
+</body>
+
+</html>

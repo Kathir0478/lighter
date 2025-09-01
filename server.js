@@ -26,8 +26,8 @@ app.post("/api/create-room", (req, res) => {
     };
 
     res.json({
-        participantLink: `/room.html?roomId=${roomId}&role=participant`,
-        chiefGuestLink: `/room.html?roomId=${roomId}&role=chief`,
+        participantLink: `/participant.html?roomId=${roomId}&role=participant`,
+        chiefGuestLink: `/chief.html?roomId=${roomId}&role=chief`,
     });
 });
 
@@ -39,7 +39,8 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on("light-lamp", ({ roomId }) => {
+    // Chief clicks on a specific lamp
+    socket.on("light-lamp", ({ roomId, index }) => {
         if (!roomId || !rooms[roomId]) return;
         const room = rooms[roomId];
 
@@ -48,9 +49,8 @@ io.on("connection", (socket) => {
             return;
         }
 
-        const index = room.lampStates.indexOf(false);
-        if (index === -1) {
-            socket.emit("error-message", { msg: "All lamps are already lit!" });
+        if (index < 0 || index >= room.lamps || room.lampStates[index]) {
+            socket.emit("error-message", { msg: "Invalid or already lit lamp!" });
             return;
         }
 
@@ -58,7 +58,7 @@ io.on("connection", (socket) => {
         room.litCount++;
         room.litBy.add(socket.id);
 
-        io.to(roomId).emit("lamp-lit", { lampIndex: index });
+        io.to(roomId).emit("lamp-updated", { lampStates: room.lampStates });
     });
 });
 

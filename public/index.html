@@ -8,13 +8,10 @@
 
 <body class="bg-gray-50 p-6">
     <div class="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
-        <h1 class="text-xl font-bold mb-4">Create a Room</h1>
-        <input id="roomName" type="text" placeholder="Room name" class="w-full border p-2 rounded mb-4" />
-        <input id="lampCount" type="number" placeholder="Number of lamps" class="w-full border p-2 rounded mb-4" />
-        <button id="createBtn" class="w-full bg-indigo-600 text-white rounded-lg p-2 hover:bg-indigo-700">
-            Create Room
-        </button>
-
+        <h1 class="text-xl font-bold mb-4">Create a Room</h1> <input id="roomName" type="text" placeholder="Room name"
+            class="w-full border p-2 rounded mb-4" /> <input id="lampCount" type="number" placeholder="Number of lamps"
+            class="w-full border p-2 rounded mb-4" /> <button id="createBtn"
+            class="w-full bg-indigo-600 text-white rounded-lg p-2 hover:bg-indigo-700"> Create Room </button>
         <div id="output" class="hidden mt-6">
             <h2 class="text-lg font-semibold mb-2">Share these links</h2>
             <div>
@@ -22,35 +19,12 @@
                 <div id="participantLink" class="bg-gray-100 p-2 rounded text-sm font-mono break-all mb-4"></div>
             </div>
             <div>
-                <p class="font-medium">Chief Guest (shared):</p>
+                <p class="font-medium">Chief Guest (control):</p>
                 <div id="chiefGuestLink" class="bg-gray-100 p-2 rounded text-sm font-mono break-all"></div>
             </div>
         </div>
     </div>
-
-    <script>
-        document.getElementById("createBtn").addEventListener("click", async () => {
-            const name = document.getElementById("roomName").value;
-            const lampCount = parseInt(
-                document.getElementById("lampCount").value,
-                10
-            );
-            const res = await fetch("/api/create-room", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, lampCount }),
-            });
-            const data = await res.json();
-            if (!res.ok) return alert(JSON.stringify(data));
-
-            document.getElementById("output").classList.remove("hidden");
-            const base = window.location.origin;
-            document.getElementById("participantLink").textContent =
-                base + data.participantLink;
-            document.getElementById("chiefGuestLink").textContent =
-                base + data.chiefGuestLink;
-        });
-    </script>
+    <script> document.getElementById("createBtn").addEventListener("click", async () => { const name = document.getElementById("roomName").value; const lampCount = parseInt(document.getElementById("lampCount").value, 10); const res = await fetch("/api/create-room", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, lampCount }), }); const data = await res.json(); if (!res.ok) return alert(JSON.stringify(data)); document.getElementById("output").classList.remove("hidden"); const base = window.location.origin; document.getElementById("participantLink").textContent = base + data.participantLink; document.getElementById("chiefGuestLink").textContent = base + data.chiefGuestLink; }); </script>
 </body>
 
 </html>
