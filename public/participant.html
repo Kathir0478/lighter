@@ -65,13 +65,13 @@
     </div>
 
     <!-- Lamp Container -->
-    <div id="lampContainer"
-        class="relative w-[400px] h-[400px] flex items-center justify-center bg-center bg-no-repeat rounded-full"
-        style="background-image: url('/images/bgsvg.svg'); background-size: 200px 200px;">
+    <div id="lampContainer" class="relative w-[400px] h-[400px] flex items-center justify-center rounded-full">
+        <!-- Central Lottie Animation -->
+        <div id="centralAnim" class="absolute w-[200px] h-[200px]"></div>
     </div>
 
     <!-- Status -->
-    <div id="status" class="mt-6 text-center text-gray-700 text-lg italic">
+    <div id="status" class="mt-14 text-center text-gray-700 text-lg italic">
         Waiting for the Chief Guest and others to light the lamps...
     </div>
 
@@ -81,14 +81,24 @@
         const roomId = urlParams.get("roomId");
         const eventName = urlParams.get("eventName") || "the Event";
         document.getElementById("eventHeader").textContent = `✨ Welcome to ${eventName} ✨`;
+
         const lampContainer = document.getElementById("lampContainer");
         const statusEl = document.getElementById("status");
 
-        // 🎤 Typing message function
+        // Central Lottie Animation
+        const centralAnimContainer = document.getElementById("centralAnim");
+        lottie.loadAnimation({
+            container: centralAnimContainer,
+            renderer: "svg",
+            loop: true,
+            autoplay: true,
+            path: "/animations/Rangoli.json" // Replace with your chosen animation
+        });
+
         function typeMessage(element, message, speed = 80) {
             element.textContent = "";
             element.classList.remove("animate-fadeIn");
-            void element.offsetWidth; // re-trigger CSS animation
+            void element.offsetWidth;
             element.classList.add("animate-fadeIn");
 
             let i = 0;
@@ -103,7 +113,10 @@
         }
 
         function renderLamps(lampCount, lampStates) {
-            lampContainer.innerHTML = "";
+            // Only remove existing lamp divs, not the central animation
+            const existingLamps = lampContainer.querySelectorAll(".lamp");
+            existingLamps.forEach(l => l.remove());
+
             const radius = 180;
             const centerX = 200;
             const centerY = 200;
@@ -114,12 +127,11 @@
                 const y = centerY + radius * Math.sin(angle);
 
                 const lamp = document.createElement("div");
-                lamp.className = `absolute w-20 h-20 rounded-full shadow-lg border-6 flex items-center justify-center 
-          transition-colors duration-700 ease-in-out
-          ${lampStates[i]
+                lamp.className = `lamp absolute w-20 h-20 rounded-full shadow-lg border-6 flex items-center justify-center 
+                    transition-colors duration-700 ease-in-out
+                    ${lampStates[i]
                         ? "bg-yellow-300 border-amber-600 shadow-[0_0_25px_rgba(255,200,0,0.8)] glow-pulse"
-                        : "bg-gray-300 border-gray-500 shadow-md"
-                    }`;
+                        : "bg-gray-300 border-gray-500 shadow-md"}`;
                 lamp.style.left = `${x - 40}px`;
                 lamp.style.top = `${y - 40}px`;
 
@@ -138,7 +150,6 @@
                         path: "/animations/Fire.json"
                     });
 
-                    // 🔥 Fade in fire
                     setTimeout(() => animContainer.classList.add("opacity-100"), 50);
                 } else {
                     lamp.textContent = "🪔";
@@ -147,7 +158,7 @@
                 lampContainer.appendChild(lamp);
             }
 
-            // ✅ Check if all lamps are lit
+            // Celebration overlay
             if (lampStates.every(state => state === true)) {
                 statusEl.textContent = "🌟 All lamps are lit! 🌟";
 
@@ -167,30 +178,27 @@
                             path: "/animations/Confetti.json"
                         });
 
-                        // 🎉 Live typing message
                         typeMessage(typingEl, "The event has started 🎊 Let's celebrate together!");
 
-                        // Hide overlay + typing after 7s
                         setTimeout(() => {
                             overlay.classList.add("hidden");
                             animContainer.innerHTML = "";
                             typingEl.textContent = "";
                         }, 7000);
                     }, 1500);
-                } else {
-                    statusEl.textContent = "✨ The lamps are being lit! ✨";
                 }
+            } else {
+                statusEl.textContent = "✨ The lamps are being lit! ✨";
             }
         }
-        // 🔗 Join the socket room
+
+        // Socket events
         socket.emit("join-room", { roomId });
 
-        // 📡 Handle initial room data
         socket.on("room-data", ({ lamps, lampStates }) => {
             renderLamps(lamps, lampStates);
         });
 
-        // 📡 Handle updates when lamps change
         socket.on("lamp-updated", ({ lampStates }) => {
             renderLamps(lampStates.length, lampStates);
         });

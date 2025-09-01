@@ -70,12 +70,16 @@
     </div>
 
     <!-- Lamp Circle -->
-    <div id="lampContainer"
+    <!-- <div id="lampContainer"
         class="relative w-[400px] h-[400px] flex items-center justify-center bg-center bg-no-repeat rounded-full"
         style="background-image: url('/images/bgsvg.svg'); background-size: 200px 200px;">
-    </div>
+    </div> -->
+    <div id="lampContainer" class="relative w-[400px] h-[400px] flex items-center justify-center rounded-full">
 
-    <div id="status" class="mt-6 text-center text-gray-700 text-lg"></div>
+        <!-- Central Lottie animation -->
+        <div id="centralAnim" class="absolute w-[200px] h-[200px]"></div>
+    </div>
+    <div id="status" class="mt-14 text-center text-gray-700 text-lg"></div>
 
     <script>
         const socket = io();
@@ -88,6 +92,16 @@
 
         let lamps = [];
         let alreadyLit = false;
+        // Central Lottie animation
+        const centralAnimContainer = document.getElementById("centralAnim");
+
+        lottie.loadAnimation({
+            container: centralAnimContainer,
+            renderer: "svg",
+            loop: true,
+            autoplay: true,
+            path: "/animations/Rangoli.json" // your animation file here
+        });
 
         function typeMessage(element, message, speed = 80) {
             element.textContent = "";
@@ -107,7 +121,10 @@
         }
 
         function renderLamps(lampCount, lampStates) {
-            lampContainer.innerHTML = "";
+            const existingLamps = lampContainer.querySelectorAll(".lamp");
+            existingLamps.forEach(lamp => lamp.remove());
+
+            // lampContainer.innerHTML = "";
             const radius = 180;
             const centerX = 200;
             const centerY = 200;
