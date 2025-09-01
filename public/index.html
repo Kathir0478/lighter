@@ -13,6 +13,26 @@
     <div class="w-full max-w-lg bg-white shadow-2xl rounded-2xl p-8">
         <h1 class="text-4xl font-extrabold text-purple-800 text-center mb-6">🎇 Lamp Ceremony Room Creator</h1>
 
+        <!-- ℹ️ Info for Admin -->
+        <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6 text-sm text-gray-700 space-y-2">
+            <p class="font-semibold text-purple-700">📌 How it works:</p>
+            <ul class="list-disc list-inside space-y-1">
+                <li>Enter a <span class="font-medium text-purple-600">Room Name</span> (e.g., “Annual Ceremony”).</li>
+                <li>Choose the <span class="font-medium text-purple-600">Number of Lamps</span> to be lit during the
+                    event.</li>
+                <li>Once created, you will get two links:
+                    <ul class="list-disc list-inside ml-4">
+                        <li><span class="font-medium text-green-700">Participant Link</span>: For all viewers
+                            (watch-only).</li>
+                        <li><span class="font-medium text-blue-700">Chief Guest Link</span>: For the Chief Guest to
+                            control lamp lighting.</li>
+                    </ul>
+                </li>
+                <li>Share the links with the respective people and start the celebration 🎉</li>
+            </ul>
+        </div>
+
+        <!-- Form -->
         <div class="space-y-4">
             <input id="roomName" type="text" placeholder="Room Name"
                 class="w-full border-2 border-purple-300 p-3 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none" />
@@ -26,8 +46,9 @@
             </button>
         </div>
 
+        <!-- Output Links -->
         <div id="output" class="hidden mt-6 p-4 bg-purple-50 border border-purple-200 rounded-xl space-y-3">
-            <h2 class="text-xl font-semibold text-purple-700">Share These Links</h2>
+            <h2 class="text-xl font-semibold text-purple-700">🔗 Share These Links</h2>
 
             <div>
                 <p class="font-medium text-purple-600">Participant (view-only):</p>

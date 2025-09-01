@@ -8,6 +8,39 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 8px rgba(255, 200, 0, 0.6));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 16px rgba(255, 200, 0, 0.9));
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 1s ease-in-out forwards;
+        }
+
+        .glow-pulse {
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+    </style>
 </head>
 
 <body
@@ -15,7 +48,7 @@
 
     <!-- Header -->
     <div class="text-center mb-10">
-        <h1 class="text-3xl font-bold text-blue-800">🌟 Welcome, Participant 🌟</h1>
+        <h1 id="eventHeader" class="text-3xl font-bold text-yellow-800">✨ Welcome ✨</h1>
         <p class="text-lg text-gray-600 mt-2">Watch the ceremonial lamps being lit in real-time</p>
     </div>
 
@@ -24,6 +57,14 @@
         <div id="celebrationAnim" class="w-full h-full"></div>
     </div>
 
+    <!-- Typing Celebration Message -->
+    <div id="typingMessage" class="fixed inset-0 flex items-center justify-center z-[60]
+              text-center text-3xl md:text-5xl font-extrabold tracking-wide
+              bg-clip-text text-transparent bg-gradient-to-r from-black to-gray-700
+              drop-shadow-[0_0_15px_rgba(0,0,0,0.7)] animate-fadeIn">
+    </div>
+
+    <!-- Lamp Container -->
     <div id="lampContainer"
         class="relative w-[400px] h-[400px] flex items-center justify-center bg-center bg-no-repeat rounded-full"
         style="background-image: url('/images/bgsvg.svg'); background-size: 200px 200px;">
@@ -38,9 +79,28 @@
         const socket = io();
         const urlParams = new URLSearchParams(window.location.search);
         const roomId = urlParams.get("roomId");
-
+        const eventName = urlParams.get("eventName") || "the Event";
+        document.getElementById("eventHeader").textContent = `✨ Welcome to ${eventName} ✨`;
         const lampContainer = document.getElementById("lampContainer");
         const statusEl = document.getElementById("status");
+
+        // 🎤 Typing message function
+        function typeMessage(element, message, speed = 80) {
+            element.textContent = "";
+            element.classList.remove("animate-fadeIn");
+            void element.offsetWidth; // re-trigger CSS animation
+            element.classList.add("animate-fadeIn");
+
+            let i = 0;
+            function typeChar() {
+                if (i < message.length) {
+                    element.textContent += message.charAt(i);
+                    i++;
+                    setTimeout(typeChar, speed);
+                }
+            }
+            typeChar();
+        }
 
         function renderLamps(lampCount, lampStates) {
             lampContainer.innerHTML = "";
@@ -54,15 +114,20 @@
                 const y = centerY + radius * Math.sin(angle);
 
                 const lamp = document.createElement("div");
-                lamp.className = `absolute w-20 h-20 rounded-full shadow-lg border-6 flex items-center justify-center transition
-          ${lampStates[i] ? "bg-yellow-300 border-amber-600" : "bg-gray-300 border-gray-500"}`;
-                lamp.style.left = `${x - 40}px`; // adjust for bigger size (80/2)
+                lamp.className = `absolute w-20 h-20 rounded-full shadow-lg border-6 flex items-center justify-center 
+          transition-colors duration-700 ease-in-out
+          ${lampStates[i]
+                        ? "bg-yellow-300 border-amber-600 shadow-[0_0_25px_rgba(255,200,0,0.8)] glow-pulse"
+                        : "bg-gray-300 border-gray-500 shadow-md"
+                    }`;
+                lamp.style.left = `${x - 40}px`;
                 lamp.style.top = `${y - 40}px`;
+
                 if (lampStates[i]) {
-                    // 🔥 Lottie fire animation for lit lamp
                     const animContainer = document.createElement("div");
                     animContainer.style.width = "60px";
                     animContainer.style.height = "60px";
+                    animContainer.className = "opacity-0 transition-opacity duration-700 ease-in-out";
                     lamp.appendChild(animContainer);
 
                     lottie.loadAnimation({
@@ -72,6 +137,9 @@
                         autoplay: true,
                         path: "/animations/Fire.json"
                     });
+
+                    // 🔥 Fade in fire
+                    setTimeout(() => animContainer.classList.add("opacity-100"), 50);
                 } else {
                     lamp.textContent = "🪔";
                 }
@@ -85,29 +153,35 @@
 
                 const overlay = document.getElementById("celebrationOverlay");
                 const animContainer = document.getElementById("celebrationAnim");
+                const typingEl = document.getElementById("typingMessage");
 
                 if (overlay.classList.contains("hidden")) {
-                    overlay.classList.remove("hidden");
-
-                    lottie.loadAnimation({
-                        container: animContainer,
-                        renderer: "svg",
-                        loop: false,
-                        autoplay: true,
-                        path: "/animations/Confetti.json"
-                    });
-
-                    // Hide overlay after 5s
                     setTimeout(() => {
-                        overlay.classList.add("hidden");
-                        animContainer.innerHTML = "";
-                    }, 5000);
+                        overlay.classList.remove("hidden");
+
+                        lottie.loadAnimation({
+                            container: animContainer,
+                            renderer: "svg",
+                            loop: false,
+                            autoplay: true,
+                            path: "/animations/Confetti.json"
+                        });
+
+                        // 🎉 Live typing message
+                        typeMessage(typingEl, "The event has started 🎊 Let's celebrate together!");
+
+                        // Hide overlay + typing after 7s
+                        setTimeout(() => {
+                            overlay.classList.add("hidden");
+                            animContainer.innerHTML = "";
+                            typingEl.textContent = "";
+                        }, 7000);
+                    }, 1500);
+                } else {
+                    statusEl.textContent = "✨ The lamps are being lit! ✨";
                 }
-            } else {
-                statusEl.textContent = "✨ The lamps are being lit! ✨";
             }
         }
-
         // 🔗 Join the socket room
         socket.emit("join-room", { roomId });
 

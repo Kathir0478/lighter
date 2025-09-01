@@ -24,14 +24,19 @@ app.post("/api/create-room", (req, res) => {
         lampStates: Array(lampCount).fill(false),
         litBy: new Set(),
     };
-
+    const encodedName = encodeURIComponent(name);
     res.json({
-        participantLink: `/participant.html?roomId=${roomId}&role=participant`,
-        chiefGuestLink: `/chief.html?roomId=${roomId}&role=chief`,
+        participantLink: `/participant.html?roomId=${roomId}&role=participant&eventName=${encodedName}`,
+        chiefGuestLink: `/chief.html?roomId=${roomId}&role=chief&eventName=${encodedName}`,
     });
 });
 
 io.on("connection", (socket) => {
+
+    socket.on("event-started", ({ roomId, message }) => {
+        io.to(roomId).emit("event-started", { message });
+    });
+
     socket.on("join-room", ({ roomId }) => {
         if (rooms[roomId]) {
             socket.join(roomId);
@@ -62,7 +67,7 @@ io.on("connection", (socket) => {
     });
 });
 
-const PORT = 3000;
+const PORT = 5000;
 server.listen(PORT, () =>
     console.log(`Server running at http://localhost:${PORT}`)
 );
