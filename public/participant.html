@@ -7,6 +7,7 @@
     <title>Participant - Lamp Ceremony</title>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 </head>
 
 <body
@@ -16,6 +17,11 @@
     <div class="text-center mb-10">
         <h1 class="text-3xl font-bold text-blue-800">🌟 Welcome, Participant 🌟</h1>
         <p class="text-lg text-gray-600 mt-2">Watch the ceremonial lamps being lit in real-time</p>
+    </div>
+
+    <!-- Celebration Overlay -->
+    <div id="celebrationOverlay" class="fixed inset-0 hidden bg-black/30 flex items-center justify-center z-50">
+        <div id="celebrationAnim" class="w-full h-full"></div>
     </div>
 
     <!-- Lamp Circle -->
@@ -46,24 +52,72 @@
                 const y = centerY + radius * Math.sin(angle);
 
                 const lamp = document.createElement("div");
-                lamp.className = `absolute w-16 h-16 rounded-full shadow-md border-4 flex items-center justify-center transition 
-          ${lampStates[i] ? "bg-yellow-400 border-yellow-600 animate-pulse" : "bg-gray-200 border-gray-400"}`;
+                lamp.className = `absolute w-16 h-16 rounded-full shadow-md border-4 flex items-center justify-center transition
+          ${lampStates[i] ? "bg-yellow-400 border-yellow-600" : "bg-gray-200 border-gray-400"}`;
                 lamp.style.left = `${x - 32}px`;
                 lamp.style.top = `${y - 32}px`;
-                lamp.innerHTML = lampStates[i] ? "🔥" : "🪔";
+
+                if (lampStates[i]) {
+                    // 🔥 Lottie fire animation for lit lamp
+                    const animContainer = document.createElement("div");
+                    animContainer.style.width = "40px";
+                    animContainer.style.height = "40px";
+                    lamp.appendChild(animContainer);
+
+                    lottie.loadAnimation({
+                        container: animContainer,
+                        renderer: "svg",
+                        loop: true,
+                        autoplay: true,
+                        path: "/animations/Fire.json"
+                    });
+                } else {
+                    lamp.textContent = "🪔";
+                }
+
                 lampContainer.appendChild(lamp);
+            }
+
+            // ✅ Check if all lamps are lit
+            if (lampStates.every(state => state === true)) {
+                statusEl.textContent = "🌟 All lamps are lit! 🌟";
+
+                const overlay = document.getElementById("celebrationOverlay");
+                const animContainer = document.getElementById("celebrationAnim");
+
+                if (overlay.classList.contains("hidden")) {
+                    overlay.classList.remove("hidden");
+
+                    lottie.loadAnimation({
+                        container: animContainer,
+                        renderer: "svg",
+                        loop: false,
+                        autoplay: true,
+                        path: "/animations/Confetti.json"
+                    });
+
+                    // Hide overlay after 5s
+                    setTimeout(() => {
+                        overlay.classList.add("hidden");
+                        animContainer.innerHTML = "";
+                    }, 5000);
+                }
+            } else {
+                statusEl.textContent = "✨ The lamps are being lit! ✨";
             }
         }
 
+        // 🔗 Join the socket room
         socket.emit("join-room", { roomId });
 
+        // 📡 Handle initial room data
         socket.on("room-data", ({ lamps, lampStates }) => {
             renderLamps(lamps, lampStates);
         });
 
+        // 📡 Handle updates when lamps change
         socket.on("lamp-updated", ({ lampStates }) => {
             renderLamps(lampStates.length, lampStates);
-            statusEl.textContent = "✨ The lamps are being lit! ✨";
         });
     </script>
 </body>

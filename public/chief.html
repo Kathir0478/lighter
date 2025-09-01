@@ -7,6 +7,7 @@
     <title>Chief Guest - Light the Lamp</title>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 </head>
 
 <body
@@ -17,7 +18,9 @@
         <h1 class="text-3xl font-bold text-yellow-800">✨ Welcome, Chief Guest ✨</h1>
         <p class="text-lg text-gray-600 mt-2">Click on one lamp to light it</p>
     </div>
-
+    <div id="celebrationOverlay" class="fixed inset-0 hidden bg-black/30 flex items-center justify-center z-50">
+        <div id="celebrationAnim" class="w-full h-full"></div>
+    </div>
     <!-- Lamp Circle -->
     <div id="lampContainer" class="relative w-[400px] h-[400px] flex items-center justify-center"></div>
 
@@ -50,10 +53,27 @@
 
                 const lamp = document.createElement("div");
                 lamp.className = `absolute w-16 h-16 rounded-full shadow-md border-4 flex items-center justify-center cursor-pointer transition
-          ${lampStates[i] ? "bg-yellow-400 border-yellow-600 animate-pulse" : "bg-gray-200 border-gray-400 hover:bg-gray-300"}`;
+          ${lampStates[i] ? "bg-yellow-400 border-yellow-600" : "bg-gray-200 border-gray-400 hover:bg-gray-300"}`;
                 lamp.style.left = `${x - 32}px`;
                 lamp.style.top = `${y - 32}px`;
-                lamp.innerHTML = lampStates[i] ? "🔥" : "🪔";
+
+                if (lampStates[i]) {
+                    // 🔥 Lottie animation instead of emoji
+                    const animContainer = document.createElement("div");
+                    animContainer.style.width = "40px";
+                    animContainer.style.height = "40px";
+                    lamp.appendChild(animContainer);
+
+                    lottie.loadAnimation({
+                        container: animContainer,
+                        renderer: "svg",
+                        loop: true,
+                        autoplay: true,
+                        path: "/animations/Fire.json"
+                    });
+                } else {
+                    lamp.textContent = "🪔";
+                }
 
                 if (!lampStates[i] && !alreadyLit) {
                     lamp.addEventListener("click", () => {
@@ -65,7 +85,34 @@
 
                 lampContainer.appendChild(lamp);
             }
+
+            // ✅ Check if all lamps are lit
+            if (lampStates.every(state => state === true)) {
+                statusEl.textContent = "🌟 All lamps are lit! What a beautiful sight! 🌟";
+                const overlay = document.getElementById("celebrationOverlay");
+                const animContainer = document.getElementById("celebrationAnim");
+
+                if (overlay.classList.contains("hidden")) {
+                    overlay.classList.remove("hidden");
+
+                    lottie.loadAnimation({
+                        container: animContainer,
+                        renderer: "svg",
+                        loop: false, // confetti usually plays once
+                        autoplay: true,
+                        path: "/animations/Confetti.json" // <-- your chosen confetti lottie
+                    });
+
+                    // Optional: Hide overlay after 5 seconds
+                    setTimeout(() => {
+                        overlay.classList.add("hidden");
+                        animContainer.innerHTML = ""; // clear animation for next trigger
+                    }, 5000);
+                }
+            }
         }
+
+
 
         socket.emit("join-room", { roomId });
 
