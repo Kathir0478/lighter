@@ -22,9 +22,10 @@
         <div id="celebrationAnim" class="w-full h-full"></div>
     </div>
     <!-- Lamp Circle -->
-    <div id="lampContainer" class="relative w-[400px] h-[400px] flex items-center justify-center"></div>
-
-    <!-- Status -->
+    <!-- <div id="lampContainer" class="relative w-[400px] h-[400px] flex items-center justify-center"></div> -->
+    <div id="lampContainer" class="relative w-[400px] h-[400px] flex items-center justify-center bg-center bg-no-repeat"
+        style="background-image: url('/images/bgsvg.svg'); background-size: 200px 200px;">
+    </div>
     <div id="status" class="mt-6 text-center text-gray-700 text-lg"></div>
 
     <script>
@@ -40,7 +41,7 @@
 
         function renderLamps(lampCount, lampStates) {
             lampContainer.innerHTML = "";
-            const radius = 150;
+            const radius = 180;
             const centerX = 200;
             const centerY = 200;
 
@@ -52,16 +53,16 @@
                 const y = centerY + radius * Math.sin(angle);
 
                 const lamp = document.createElement("div");
-                lamp.className = `absolute w-16 h-16 rounded-full shadow-md border-4 flex items-center justify-center cursor-pointer transition
-          ${lampStates[i] ? "bg-yellow-400 border-yellow-600" : "bg-gray-200 border-gray-400 hover:bg-gray-300"}`;
-                lamp.style.left = `${x - 32}px`;
-                lamp.style.top = `${y - 32}px`;
+                lamp.className = `absolute w-20 h-20 rounded-full shadow-lg border-6 flex items-center justify-center transition
+          ${lampStates[i] ? "bg-yellow-300 border-amber-600" : "bg-gray-300 border-gray-500"}`;
+                lamp.style.left = `${x - 40}px`; // adjust for bigger size (80/2)
+                lamp.style.top = `${y - 40}px`;
 
                 if (lampStates[i]) {
                     // 🔥 Lottie animation instead of emoji
                     const animContainer = document.createElement("div");
-                    animContainer.style.width = "40px";
-                    animContainer.style.height = "40px";
+                    animContainer.style.width = "60px";
+                    animContainer.style.height = "60px";
                     lamp.appendChild(animContainer);
 
                     lottie.loadAnimation({
